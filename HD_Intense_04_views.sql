@@ -139,7 +139,8 @@ select
   ,to_char(f.data_tabeli,'YYYYMMDD') PFS_DataKursuWaluty
 from &&CUTTER_SCHEMA..faknagl f
 left join &&CUTTER_SCHEMA..faknagl ff on f.nr_komp_poprze>0 and ff.nr_komp=f.nr_komp_poprze
-where f.stan>1 order by f.nr_komp
+where f.stan>1 and f.data_wyst between to_date('01-04-2020','DD-MM-YYYY') and to_date('31-03-2021','DD-MM-YYYY')
+order by f.nr_komp
 with read only;
 /
 /*
@@ -155,10 +156,11 @@ begin
 end;*/
 /
 create or replace view &&CUTTER_SCHEMA..hd_faktura_poz_view as
-AS select
+AS
+select
 trim(to_char(p.nr_komp_doks,'0000000000'))||trim(to_char(p.nr_poz,'00000'))||trim(to_char(p.lp_dod,'00'))
 OSP_OrgKey
-   ,nvl((select to_char(max(l.LOG_DATE),'YYYYMMDD') from Cutter39.hd_log_faktura l where l.id=p.nr_komp_doks),'20181113') OSP_DataAktualizacjiRekordu
+   ,nvl((select to_char(max(l.LOG_DATE),'YYYYMMDD') from &&CUTTER_SCHEMA..hd_log_faktura l where l.id=p.nr_komp_doks),'20181113') OSP_DataAktualizacjiRekordu
    ,0 OSP_Usuniety
    ,p.nr_komp_doks OSP_PfsOrgKey
    ,p.il_szt OSP_Ilosc
@@ -202,13 +204,15 @@ OSP_KorektaDoOspOrgKey
    ,p.nr_poz OSP_NrPoz
    ,decode(p.rodzaj_ceny,'z³/s','szt','m2') OSP_RodzajCeny
    ,pd.cena_surowcowa/pd.ilosc OSP_CenaSurowcowa
-from Cutter39.fakpoz p
-left join Cutter39.faknagl f on f.nr_komp=p.nr_komp_doks left join pozdok dp on dp.nr_komp_dok=p.id_wz and dp.nr_poz=p.id_wz_poz left join dok d on d.NR_KOMP_DOK=dp.nr_dok_zrod 
+from &&CUTTER_SCHEMA..fakpoz p
+left join &&CUTTER_SCHEMA..faknagl f on f.nr_komp=p.nr_komp_doks 
+left join pozdok dp on dp.nr_komp_dok=p.id_wz and dp.nr_poz=p.id_wz_poz left join dok d on d.NR_KOMP_DOK=dp.nr_dok_zrod 
 left join (
     select d.nr_kom_fakt,pd.nr_komp_baz,pd.nr_poz_zlec,sum(pd.ilosc_jp*pd.cen_wyd) cena_surowcowa, sum(pd.ilosc_jr) ilosc from pozdok pd
     left join dok d on d.nr_komp_dok=pd.nr_komp_dok
     where pd.typ_dok='WZ' group by d.nr_kom_fakt,pd.nr_komp_baz,pd.nr_poz_zlec
 ) pd on pd.nr_kom_fakt=p.nr_komp_doks and pd.nr_komp_baz=p.id_zlec and pd.nr_poz_zlec=p.id_zlec_poz
+where f.data_wyst between to_date('01-04-2020','DD-MM-YYYY') and to_date('31-03-2021','DD-MM-YYYY')
 WITH READ ONLY;
 /
 
