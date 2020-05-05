@@ -1,3 +1,4 @@
+-- dodany komentarz
 -- puœciæ jako dba
 create or replace view &&CUTTER_SCHEMA..hd_uzytkownik_view as
 select
