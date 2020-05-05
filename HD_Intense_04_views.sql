@@ -326,6 +326,8 @@ select
   ,'MAG'||d.typ_dok PMG_TdoOrgKey
   ,trim(upper(d.nr_op_wpr)) PMG_AutorUsrOrgKey
   ,to_char(d.data_d,'YYYYMMDD') PMG_DataDokumentu
+  ,decode(d.typ_dok,'OO+',d.nr_mag_doc,0) PMG_OoOrgOddzial
+  ,decode(d.typ_dok,'OO+',d.nr_kom_fakt,0) PMG_OoOrgOrgKey
 from &&CUTTER_SCHEMA..dok d
 with read only;
 /
