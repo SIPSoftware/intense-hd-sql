@@ -326,8 +326,30 @@ select
   ,'MAG'||d.typ_dok PMG_TdoOrgKey
   ,trim(upper(d.nr_op_wpr)) PMG_AutorUsrOrgKey
   ,to_char(d.data_d,'YYYYMMDD') PMG_DataDokumentu
-  ,decode(d.typ_dok,'OO+',d.nr_mag_doc,0) PMG_OoOrgOddzial
-  ,decode(d.typ_dok,'OO+',d.nr_kom_fakt,0) PMG_OoOrgOrgKey
+  ,decode(d.typ_dok,'OO+',d.nr_mag_doc,0) PMG_SrcOddzialCutter
+  ,decode(d.typ_dok,'OO+',
+    decode(d.nr_mag_doc,
+-- tlumaczenie nr_oddzialu na numery w Intense
+--      Kraków
+        3,1,
+--      Bia³ystok
+        4,2,        
+--      Bydgoszcz
+        5,3,
+--      Ostro³êka
+        7,4,
+--      Skierniewice                         
+        2,5,
+--      Szczecin
+        8,6,
+--      Wroc³aw                         
+        6,7,
+--      Metal        
+        4,8,
+--      else
+        0),
+    0) PMG_SrcKeyOO
+  ,decode(d.typ_dok,'OO+',d.nr_kom_fakt,0) PMG_OrgKeyOO
 from &&CUTTER_SCHEMA..dok d
 with read only;
 /
