@@ -345,7 +345,7 @@ select
 --      Wroc³aw                         
         6,7,
 --      Metal        
-        4,8,
+        11,8,
 --      else
         0),
     0) PMG_SrcKeyOO
