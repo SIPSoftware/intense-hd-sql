@@ -1,4 +1,4 @@
--- puœciæ jako dba
+-- puï¿½ciï¿½ jako dba
 create or replace view &&CUTTER_SCHEMA..hd_uzytkownik_view as
 select
   trim(upper(o.id)) USR_OrgKey
@@ -67,7 +67,7 @@ select
   'SPR' RDO_OrgKey
   ,'20181113' RDO_DataAktualizacjiRekordu
   ,0 RDO_Usuniety
-  ,'Dokumenty sprzeda¿y' RDO_Nazwa
+  ,'Dokumenty sprzedaï¿½y' RDO_Nazwa
   ,'SPR' RDO_Kod
 from dual
 union
@@ -126,7 +126,7 @@ select
   ,decode(trim(f.got_kred),'Kr','Pr','Go','Go','Inne') PFS_FormaPlatnosci
   ,f.netto_wal PFS_WartoscNetto
   ,f.vat_wal PFS_WartoscVat
-  ,decode(f.NR_KOMP_POPRZE,0,0,1) PFS_Korekta
+ ,decode(f.NR_KOMP_POPRZE,0,0,1) PFS_Korekta
   ,decode(f.NR_KOMP_POPRZE,0,'',f.nr_komp_poprze) PFS_KorektaDoPfsOrgKey
   ,nvl(ff.netto_wal,0) PFS_KorygowanaWartoscNetto
   ,nvl(ff.vat_wal,0) PFS_KorygowanaWartoscVat
@@ -138,10 +138,11 @@ select
   ,decode(trim(f.prefix_kor),'PLN',1,f.kurs) PFS_KursWaluty
   ,to_char(f.data_tabeli,'YYYYMMDD') PFS_DataKursuWaluty
 from &&CUTTER_SCHEMA..faknagl f
-left join &&CUTTER_SCHEMA..faknagl ff on f.nr_komp_poprze>0 and ff.nr_komp=f.nr_komp_poprze
-where f.stan>1 and f.data_wyst between to_date('01-04-2020','DD-MM-YYYY') and to_date('31-03-2021','DD-MM-YYYY')
-order by f.nr_komp
-with read only;
+left join &&CUTTER_SCHEMA..faknagl ff on f.nr_komp_poprze>0 and ff.nr_komp=f.nr_komp_poprze,
+&&CUTTER_SCHEMA..firma r
+where f.stan>1 and f.data_wyst between r.pocz_roku_obl and add_months(r.pocz_roku_obl -1,12)
+order by f.nr_komp 
+WITH READ ONLY;
 /
 /*
 create or replace function HD_OSP_ORGKey2(p_id_poz number) return VARCHAR2 as
@@ -156,7 +157,6 @@ begin
 end;*/
 /
 create or replace view &&CUTTER_SCHEMA..hd_faktura_poz_view as
-AS
 select
 trim(to_char(p.nr_komp_doks,'0000000000'))||trim(to_char(p.nr_poz,'00000'))||trim(to_char(p.lp_dod,'00'))
 OSP_OrgKey
@@ -203,21 +203,23 @@ OSP_KorektaDoOspOrgKey
    ,p.waga OSP_Waga
    ,p.cena_netto_szt OSP_CenaNettoSztuki
    ,p.nr_poz OSP_NrPoz
-   ,decode(p.rodzaj_ceny,'z³/s','szt','m2') OSP_RodzajCeny
+   ,decode(p.rodzaj_ceny,'zÅ‚/s','szt','m2') OSP_RodzajCeny
    ,decode(p2.ilosc,0,pd.cena_surowcowa,pd.cena_surowcowa/p2.ilosc) OSP_CenaSurowcowaM2
    ,decode(p2.il_szt,0,pd.cena_surowcowa,pd.cena_surowcowa/p2.il_szt) OSP_CenaSurowcowaSzt
 from &&CUTTER_SCHEMA..fakpoz p
 left join &&CUTTER_SCHEMA..faknagl f on f.nr_komp=p.nr_komp_doks 
-left join pozdok dp on dp.nr_komp_dok=p.id_wz and dp.nr_poz=p.id_wz_poz left join dok d on d.NR_KOMP_DOK=dp.nr_dok_zrod 
+left join &&CUTTER_SCHEMA..pozdok dp on dp.nr_komp_dok=p.id_wz and dp.nr_poz=p.id_wz_poz left join dok d on d.NR_KOMP_DOK=dp.nr_dok_zrod 
 left join (
-    select d.nr_kom_fakt,pd.nr_komp_baz,pd.nr_poz_zlec,sum(pd.ilosc_jp*pd.cen_wyd) cena_surowcowa, sum(pd.ilosc_jr) ilosc from pozdok pd
+    select d.nr_kom_fakt,pd.nr_komp_baz,pd.nr_poz_zlec,sum(pd.ilosc_jp*pd.cen_wyd) cena_surowcowa, sum(pd.ilosc_jr) ilosc from &&CUTTER_SCHEMA..pozdok pd
     left join dok d on d.nr_komp_dok=pd.nr_komp_dok
     where pd.typ_dok='WZ' group by d.nr_kom_fakt,pd.nr_komp_baz,pd.nr_poz_zlec
 ) pd on pd.nr_kom_fakt=p.nr_komp_doks and pd.nr_komp_baz=p.id_zlec and pd.nr_poz_zlec=p.id_zlec_poz
 left join (
-    select fp.nr_komp_doks,fp.id_zlec,fp.id_zlec_poz,sum(ilosc) ilosc,sum(il_szt) il_szt from fakpoz fp where czy_dod<>'T' group by fp.nr_komp_doks,fp.id_zlec,fp.id_zlec_poz
-) p2 on p2.nr_komp_doks=p.nr_komp_doks and p2.id_zlec=p.id_zlec and p2.id_zlec_poz=p.id_zlec_poz;
-where f.data_wyst between to_date('01-04-2020','DD-MM-YYYY') and to_date('31-03-2021','DD-MM-YYYY')
+    select fp.nr_komp_doks,fp.id_zlec,fp.id_zlec_poz,sum(ilosc) ilosc,sum(il_szt) il_szt from &&CUTTER_SCHEMA..fakpoz fp where czy_dod<>'T' group by fp.nr_komp_doks,fp.id_zlec,fp.id_zlec_poz
+) p2 on p2.nr_komp_doks=p.nr_komp_doks and p2.id_zlec=p.id_zlec and p2.id_zlec_poz=p.id_zlec_poz,
+&&CUTTER_SCHEMA..firma r
+--where f.data_wyst between to_date('01-04-2020','DD-MM-YYYY') and to_date('31-03-2021','DD-MM-YYYY') 
+where f.data_wyst between r.pocz_roku_obl and add_months(r.pocz_roku_obl -1,12)
 WITH READ ONLY;
 /
 
@@ -226,17 +228,17 @@ select
   'SUR' TMG_OrgKey
   ,'20181113' TMG_DataAktualizacjiRekordu
   ,0 TMG_Usuniety
-  ,'Magayn surowców' TMG_Nazwa
+  ,'Magayn surowcï¿½w' TMG_Nazwa
   ,'Sur' TMG_Kod
 from dual
 union
-select 'TOW','20181113',0,'Magazyn towarów','Tow' from dual
+select 'TOW','20181113',0,'Magazyn towarï¿½w','Tow' from dual
 union
-select 'WYR','20181113',0,'Magazyn wyrobów','Wyr' from dual
+select 'WYR','20181113',0,'Magazyn wyrobï¿½w','Wyr' from dual
 union
-select 'CZY','20181113',0,'Magazyn czynnoœci','Czy' from dual
+select 'CZY','20181113',0,'Magazyn czynnoï¿½ci','Czy' from dual
 union
-select 'POL','20181113',0,'Magazyn pó³produktów','Pó³' from dual
+select 'POL','20181113',0,'Magazyn pï¿½produktï¿½w','Pï¿½' from dual
 union
 select 'OTHER','20181113',0,'Magazyn inny - niepoprawny',' ' from dual
 with read only;
@@ -249,7 +251,7 @@ select
   ,0 MAG_Usuniety
   ,m.NAZ_MAG MAG_Nazwa
   ,m.nr_mag MAG_Kod
-  ,decode(m.znacznik,'Pó³','POL','Sur','SUR','Tow','TOW','Czy','CZY','Wyr','WYR','OTHER') MAG_TmgOrgKey
+  ,decode(m.znacznik,'Pï¿½','POL','Sur','SUR','Tow','TOW','Czy','CZY','Wyr','WYR','OTHER') MAG_TmgOrgKey
   ,m.miasto MAG_Lokalizacja
 from &&CUTTER_SCHEMA..magazyn m
 with read only;
@@ -335,19 +337,19 @@ select
   ,decode(d.typ_dok,'OO+',
     decode(d.nr_mag_doc,
 -- tlumaczenie nr_oddzialu na numery w Intense
---      Kraków
+--      Krakï¿½w
         3,1,
---      Bia³ystok
+--      Biaï¿½ystok
         4,2,        
 --      Bydgoszcz
         5,3,
---      Ostro³êka
+--      Ostroï¿½ï¿½ka
         7,4,
 --      Skierniewice                         
         2,5,
 --      Szczecin
         8,6,
---      Wroc³aw                         
+--      Wrocï¿½aw                         
         6,7,
 --      Metal        
         11,8,
