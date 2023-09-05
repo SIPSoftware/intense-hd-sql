@@ -1,13 +1,13 @@
 -- ****************************
 --
--- Skrypt zaklada obiekty potrzebne do uruchomienia widoków dla Hurtowni Danych
+-- Skrypt zaklada obiekty potrzebne do uruchomienia widokï¿½w dla Hurtowni Danych
 --
 -- ***************************
 
 
--- pusciæ jako DBA: SYS,SYSTEM,CUTTER
+-- pusciï¿½ jako DBA: SYS,SYSTEM,CUTTER
 define path='.\';
-define cutter_schema='test1';
+define cutter_schema='test';
 define hd_schema='intense';
 define hd_role='hd_role';
 
@@ -18,7 +18,7 @@ define hd_role='hd_role';
 --  LOGGING ONLINE PERMANENT BLOCKSIZE 8192
 --  EXTENT MANAGEMENT LOCAL AUTOALLOCATE DEFAULT NOCOMPRESS  SEGMENT SPACE MANAGEMENT AUTO;
 
--- pusciæ tylko raz
+-- pusciï¿½ tylko raz
 --CREATE USER &&hd_schema IDENTIFIED BY "intense123"  DEFAULT TABLESPACE "INTENSE" TEMPORARY TABLESPACE "TEMP" default profile CUTTER
 ;
 --ALTER USER &&hd_schema QUOTA UNLIMITED ON INTENSE;
